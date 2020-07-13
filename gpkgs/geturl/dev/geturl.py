@@ -11,7 +11,7 @@ def geturl(url,
     alias=None, 
     direpa_project=None,
     hostname_path=None,
-    params=dict(),
+    params=None,
 ):
     http_regstr=r"^http.*$"
     if re.match(http_regstr, url):
@@ -57,16 +57,20 @@ def geturl(url,
             hostname_path,
             url
         )
-        params_str=""
-        for key, value in params.items():
-            prefix="&"
-            if params_str == "":
-                prefix=""
-            params_str+="{}{}={}".format(prefix, key, value)
-            pass
+        if params is not None:
+            if isinstance(params, dict):
+                params_str=""
+                for key, value in params.items():
+                    prefix="&"
+                    if params_str == "":
+                        prefix=""
+                    params_str+="{}{}={}".format(prefix, key, value)
+                    pass
 
-        if params_str != "":
-            url+="?"+params_str
+                if params_str != "":
+                    url+="?"+params_str
+            else:
+                msg.error("params is not a dict '{}'".format(params), exit=1)
         return url
 
 def get_hostname_from_file(file_path):

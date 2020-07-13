@@ -3,7 +3,7 @@
         "Gabriel Auger"
     ],
     "deps": [
-        "f093c509-18ac-4feb-8412-f556ec2e838d|geturl|0.1.1|gpm",
+        "f093c509-18ac-4feb-8412-f556ec2e838d|geturl|0.1.2|gpm",
         "44878e31-5356-49d9-af95-d9d24f2d5310|json_config|2.0.0|gpm",
         "cf09346e-b436-4259-b6dd-e56516b508a5|message|7.1.0|gpm",
         "ca72f0a9-8a9b-4ff6-a013-e5d0974cb1e5|options|8.1.3|gpm",
@@ -17,5 +17,5 @@
     ],
     "name": "requests_cmd",
     "uuid4": "10e47dc7-10eb-4fa7-97d8-81b4405ade06",
-    "version": "0.10.0"
+    "version": "0.10.1"
 }

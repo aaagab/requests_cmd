@@ -41,6 +41,18 @@ if __name__ == "__main__":
         print(url)
     except:
         print()
+
+    try:
+        print()
+        print("error message params")
+        url=pkg.geturl(
+            "departments",
+            hostname_path="https://librocket.com",
+            params=[],
+        )
+        print(url)
+    except:
+        print()
         
     try:
         url=pkg.geturl(
