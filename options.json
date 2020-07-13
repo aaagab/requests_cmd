@@ -1,0 +1,75 @@
+{
+    "auth_pull": {
+        "aliases": "--apull,--auth-pull",
+        "info": "save authentication cookie to a tmp location"
+    },
+    "auth_push": {
+        "aliases": "--apush,--auth-push",
+        "info": "retrieve authentication cookie from tmp location and add it to request headers"
+    },
+    "data": {
+        "info": "You can provide a json file path relative or absolute or you can use a json string. If for a given key a value equals '__hidden__' then you are going to be prompted to type it in the terminal. For json terminal string use this syntax \"{\\\"marc\\\": \\\"__input__\\\"}\"  or \"{'marc': '__input__'}\". this option send data in body in data form. ex: email=email%40myemail.com&password=mypass%2B, avoid this format for complex json object it won't work.",
+        "values": "JSON_OR_FILE"
+    },
+    "download": {
+        "args": "path"
+    },
+    "examples": {
+        "info": "show commands examples"
+    },
+    "exit": {
+        "info": "Exit after command",
+        "nested": true
+    },
+    "files": {
+        "info": "Give file path (relative or absolute) to send with a POST method, apparently any other data should be sent with --data (to confirm)",
+        "nvalues": "+",
+        "values": "FILE_PATH"
+    },
+    "get_output": {
+        "aliases": "-o,--output,--get-output",
+        "info": "print request output"
+    },
+    "hostname": {
+        "info": "In order to complete the url, you can provide a string, or a path relative or absolute. If the argument is not provided and the url does not start with http, a env variable HOSTNAME_URL is searched, then a file named hostname_url.txt is searched in the project directory and if none an error is thrown.",
+        "values": "FILE_STRING"
+    },
+    "http_code": {},
+    "http_code_info": {},
+    "json": {
+        "info": "You can provide a json file path relative or absolute or you can use a json string. If for a given key a value equals '__hidden__' then you are going to be prompted to type it in the terminal. For json terminal string use this syntax \"{\\\"marc\\\": \\\"__input__\\\"}\" or \"{'marc': '__input__'}\" . this option send data in body in json form. ex: b'{\"email\": \"email@myemail.com\", \"password\": \"mypass\"}'. This is the format to use for complex json object ",
+        "values": "JSON_OR_FILE"
+    },
+    "method": {
+        "aliases": "-m,--method",
+        "info": "select a method from GET, POST, VALUE, DELETE (default GET)",
+        "values": "NAME"
+    },
+    "params": {
+        "info": "Add url parameters",
+        "values": "JSON_OR_FILE"
+    },
+    "path": {
+        "info": "directory path can be relative or absolute",
+        "nested": true,
+        "values": "DIRECTORY"
+    },
+    "path_project": {
+        "info": "mainly use to get the hostname info for the relative url. If not set path project is the current directory.",
+        "values": "PATH"
+    },
+    "raw": {
+        "info": "Show raw request"
+    },
+    "raw_before": {
+        "args": "exit",
+        "info": "Show raw request before it is send"
+    },
+    "url": {
+        "aliases": "-u,--url",
+        "values": "URL"
+    },
+    "url_alias": {
+        "info": "default is hostname_url"
+    }
+}

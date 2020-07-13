@@ -1,0 +1,98 @@
+{
+    "__app__": {
+        "args": "debug,project_path",
+        "info": "Change dir to the specified path before executing commands."
+    },
+    "add_licenses": {
+        "args": "authors,licenses",
+        "nested": true
+    },
+    "authors": {
+        "nested": true,
+        "nvalues": "1,*",
+        "values": "Full Name"
+    },
+    "debug": {
+        "show": false,
+        "nested": true
+    },
+    "description": {
+        "nested": true,
+        "values": "Package Description"
+    },
+    "email": {
+        "nested": true,
+        "values": "EMAIL"
+    },
+    "filen_main": {
+        "nested": true,
+        "info": "Package main file if any, just the full name",
+        "values": "main_file"
+    },
+    "generate": {
+        "args": "add_licenses,email,init,pkg_name,project_type,username",
+        "aliases": "-g,--generate"
+    },
+    "gitlab_api": {
+        "aliases": "--gitlab-api,--gl",
+        "args": "request"
+    },
+    "index": {
+        "nested": true,
+        "values": "[0-9]"
+    },
+    "init": {
+        "args": "authors,description,filen_main,licenses,pkg_name,pkg_version",
+        "info": "create a gpm.json file for a new project.",
+        "nested": true,
+        "required": "pkg_name"
+    },
+    "licenses": {
+        "nested": true,
+        "nvalues": "1,*",
+        "values": "MIT|None"
+    },
+    "method": {
+        "aliases": "-m,--method",
+        "nested": true,
+        "nvalues": "?",
+        "values": "GET|POST"
+    },
+    "project_path": {
+        "aliases": "--ppath,--pp,--project-path",
+        "nested": true,
+        "nvalues": "1",
+        "values": "PROJECT_PATH"
+    },
+    "pkg_name": {
+        "aliases": "--pkg-name,--pname",
+        "info": "package name",
+        "nested": true,
+        "values": "PKG_NAME"
+    },
+    "pkg_version": {
+        "aliases": "--pversion,--pv,--pkg-version,--rversion",
+        "info": "Select version.",
+        "nested": true,
+        "values": "VERSION"
+    },
+    "project_type": {
+        "aliases": "--project-type,--pt",
+        "nested": true,
+        "nvalues": "?",
+        "values": "python_cli"
+    },
+    "request": {
+        "aliases": "-r,--request",
+        "args": "method",
+        "nested": true,
+        "values": "TEXT"
+    },
+    "set_bump_deploy": {
+        "info": "Generate files that launch the application and publish new release"
+    },
+    "username": {
+        "nested": true,
+        "values": "USERNAME"
+    }
+}
