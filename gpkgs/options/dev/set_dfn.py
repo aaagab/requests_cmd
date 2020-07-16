@@ -28,6 +28,7 @@ def set_dfn(Options):
 
     Options.argsns=SimpleNamespace(**dy_names)
     Options.argsdy=dy_names
+    types= ["bool", "float", "int", "json", "string", "realpath", "virtualpath", "file", "directory"];
 
     for name, arg in sorted(Options.argsdy.items()):
         if arg == Options.root_arg:
@@ -38,6 +39,9 @@ def set_dfn(Options):
                 arg.dy["args"].sort()
             else:
                 arg.dy["args"]=args
+
+        if arg.dy["type"] not in types:
+            msg.error("For arg '{}' arg type '{}' is not found in {}".format(name, arg.dy["type"], types), exit=1)
 
         if arg.dy["required"] is not None:
             if arg.dy["args"] is None:

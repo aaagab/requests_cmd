@@ -18,6 +18,7 @@ if __name__ == "__main__":
     pkg=importlib.import_module(module_name)
     del sys.path[0]
 
+    print(sys.argv)
     args, dy_app=pkg.Options(filenpa_app="gpm.json", filenpa_args="options.json", allow_empty=True, cli_expand=True).get_argsns_dy_app()
 
     if args.examples.here:

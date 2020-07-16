@@ -1,0 +1,7 @@
+{
+    "app_name": "json_config",
+    "author": "Gabriel Auger",
+    "description": "json_config is a class that helps processing json file",
+    "license": "MIT",
+    "version": "2.0.0"
+}

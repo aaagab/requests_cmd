@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 8.1.3
+# version: 8.2.0
 # name: options
 # license: MIT
 
@@ -18,9 +18,69 @@ if __name__ == "__main__":
     pkg = importlib.import_module(module_name)
     del sys.path[0]
 
+    args, dy_app=pkg.Options(filenpa_app="gpm.json", dy_args=dict( myjson=dict(values="json_VALUE", type="json"))).get_argsns_dy_app()
+    # samples/main.py --myjson "{'key': '__hidden__'}"
+    if args.myjson.here:
+        print(args.myjson.value)
+    sys.exit(0)
+
+    opts=pkg.Options()
+    print(opts.args, opts.dy_app)
+
+    sys.exit()
+
+    args, dy_app=pkg.Options(filenpa_app="gpm.json", filenpa_args="config/release.json").get_argsns_dy_app()
+    print(args.__app__.values)
+    sys.exit(0)
+
+    # testing path types
+    args, dy_app=pkg.Options(filenpa_app="gpm.json", dy_args=dict(
+        mydirectory=dict(values="directory_VALUE", type="directory"),
+        myfile=dict(values="file_VALUE", type="file"),
+        myvirtualpath=dict(values="virtualpath_VALUE", type="virtualpath"),
+        myrealpath=dict(values="realpath_VALUE", type="realpath"),
+    )).get_argsns_dy_app()
+    # pprint(dy_)
+
+    # samples/main.py --mydirectory /sys --myfile gpm.json --myvirtualpath moon/lander --myrealpath /etc/grub.d/README"
+    print("mydirectory: ", args.mydirectory.value) 
+    print("myfile: ", args.myfile.value) 
+    print("myvirtualpath: ", args.myvirtualpath.value) 
+    print("myrealpath: ", args.myrealpath.value) 
+
+    sys.exit(0)
+
     args, dy_app=pkg.Options(filenpa_app="gpm.json", filenpa_args="config/pbuilder.json").get_argsns_dy_app()
     print(args.__app__.values)
     sys.exit(0)
+
+    # testing value types
+    args, dy_app=pkg.Options(filenpa_app="gpm.json", dy_args=dict(
+        mybool=dict(values="bool_VALUE", type="bool"),
+        myint=dict(values="int_VALUE", type="int"),
+        myfloat=dict(values="float_VALUE", type="float"),
+        mystring=dict(values="string_VALUE", type="string"),
+        myjson=dict(values="json_VALUE", type="json"),
+    )).get_argsns_dy_app()
+    # pprint(dy_)
+
+    # samples/main.py --mystring sdf --mybool true --myint -234 --myfloat 2.343 --myjson "{'mykey':'value'}"
+    print("mybool: ", args.mybool.value) 
+    print("myint: ", args.myint.value) 
+    print("myfloat: ", args.myfloat.value) 
+    print("mystring: ", args.mystring.value) 
+    print("myjson: ", args.myjson.value) 
+
+    # samples/main.py --myjson gpm.json
+    # pprint(args.myjson.value)
+
+    # samples/main.py --myjson "{'username': '__input__', 'password':'__hidden__' }"
+    # pprint(args.myjson.value)
+    sys.exit(0)
+
+ 
+
+ 
    
     # cli_expand test
     # cmd:

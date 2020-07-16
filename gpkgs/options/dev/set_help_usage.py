@@ -116,7 +116,7 @@ def get_wrap_text(Options, text, indent):
                 data=""
         else:    
             if len(data) == max_width:
-                if c < len(text):
+                if c < len(text)-1:
                     if text[c+1] == " ":
                         lines.append(get_formatted_text(indent, data))
                         data=""
@@ -163,7 +163,7 @@ def set_arg_basic(Options, mode, arg):
     if mode == "help":
         if arg.dy["info"] is not None:
             indent=" "*6
-            get_wrap_text(Options, arg.dy["info"], indent)
+            # get_wrap_text(Options, arg.dy["info"], indent)
             tmp_text+="\n"+(get_wrap_text(Options, arg.dy["info"], indent))
 
     arg.dy["basic_"+mode]=tmp_text
