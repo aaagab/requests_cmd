@@ -121,10 +121,9 @@ def requests_cmd(
     elif "json" in request_options and not dy_files:
         request_options["headers"].update({"Content-Type": "application/json"})
 
-    if method == "GET":
-        if download is True:
-            request_options["stream"]=True
-
+    # if method in ["GET", "P:
+    if download is True:
+        request_options["stream"]=True
 
     if show_raw_before is True:
         del request_options["verify"]
@@ -151,11 +150,15 @@ def requests_cmd(
     if show_raw is True:
         pretty_print_request(response.request)   
     
-    content=get_reponse_content(show_http_code_info, show_http_code, response, show_output)
+    response=get_reponse_content(show_http_code_info, show_http_code, response, show_output)
 
+    r"""
+set id=44 && A:\wrk\r\requests_cmd\src\main.py --url api/attachments/download/__id__ --method get --auth-push --download --path C:\Users\user\AppData\Local\Temp
+set data="{ 'ids':['dd77a72b-c8f1-e911-b75a-00e04c680e1a']}" &&  A:\wrk\r\requests_cmd\src\main.py --url api/events/report --method post --auth-push --json __data__ --download --path C:\Users\user\AppData\Local\Temp
+    """
     if download is True:
-        if content.status_code == 200:
-            value=content.headers.get("Content-Disposition")
+        if response.status_code == 200:
+            value=response.headers.get("Content-Disposition")
             if value is None:
                 msg.error("Filename can't be found for download")
                 sys.exit(1)
@@ -168,18 +171,18 @@ def requests_cmd(
             filenpa_download=os.path.join(direpa_download, filen_download)
 
             with open(filenpa_download, 'wb') as f:
-                shutil.copyfileobj(content.raw, f)
+                shutil.copyfileobj(response.raw, f)
                 msg.success("Saved '<cyan>{}</cyan>'".format(filenpa_download))
 
     if auth_pull is True:
         with open(filenpa_data, "w") as f:
-            f.write(content.json())
+            f.write(response.json())
             print("Cookie Saved!")
 
     if show_output is True:
-        print_html_if(content.text)
+        print_html_if(response.text)
 
-    return content
+    return response
 
 def get_headers(method="GET", host="localhost", referer="http://localhost/", user_agent="firefox", cookie=None):
     # referer="http://lclwapps.edu/t/timeclock/1/login"
