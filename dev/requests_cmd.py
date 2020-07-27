@@ -65,6 +65,9 @@ def requests_cmd(
     if len(files) > 0:
         if method != "POST":
             msg.error("--files can only be sent with a POST method", exit=1)
+        for key in dy_input:
+            if key != "data":
+                msg.error("Not authorized '{}'".format(key),"If you send data when posting files only 'data' argument is authorized", exit=1)
 
     dy_files=dict()
     for i in range(len(files)):
