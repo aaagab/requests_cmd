@@ -17,6 +17,7 @@ from ..gpkgs import message as msg
 from ..gpkgs.json_config import Json_config
 from ..gpkgs.prompt import prompt
 from ..gpkgs.geturl import geturl
+from ..gpkgs.getjson import getjson
 
 
 def get_path(file_path):
@@ -97,7 +98,16 @@ def requests_cmd(
         with open(filenpa_data, "r") as f:
             cookie=f.read()
 
-    data=get_data(dy_input)
+
+    # I am not taking care of that case anymore but at some point I should
+    # for [FromBody]
+    # =john
+    # if ":" not in values:
+    #     return "={}".format(values)
+    data={}
+    for key, value in dy_input.items():
+        data[key]=getjson(dy_input[key])
+
     if dy_files:
         data["files"]=dy_files
         if "data" in data:
@@ -224,47 +234,6 @@ def pretty_print_request(req):
         '\r\n'.join('{}: {}'.format(k, v) for k, v in req.headers.items()),
         req.body,
     ))
-
-def check_for_input(dy):
-    for key, value in dy.items():
-        if isinstance(value, dict):
-            check_for_input(dy[key])
-        else:
-            if value == "__hidden__":
-                dy[key]=prompt(key, hidden=True)
-            elif value == "__input__":
-                dy[key]=prompt(key)
-
-# I am not taking care of that case anymore but at some point I should
-# for [FromBody]
-# =john
-# if ":" not in values:
-#     return "={}".format(values)
-def get_data(dy_input):
-    send_data={}
-    for key, value in dy_input.items():
-        dy=None
-        if re.match(r"^.*\.json$", value):
-            dy=Json_config(get_path(value)).data
-        else:
-            try:
-                dy=json.loads(value)
-            except BaseException as e:
-                try:
-                    ### for json string with single quotes
-                    syntax=dict(true=True, false=False, null=None)
-                    for old, new in syntax.items():
-                        value = re.sub(r"(:)(\s?){}".format(old), r"\1\2{}".format(new), value)
-
-                    dy=ast.literal_eval(value)
-                except BaseException as e:
-                    msg.error("Error '{}' when trying to load json from string '{}'.".format(e, value), trace=True)
-                    sys.exit(1)
-            
-        check_for_input(dy)
-        send_data[key]=dy
-
-    return send_data
 
 def get_reponse_content(show_http_code_info, show_http_code, response, show_output=False):
     status_code=response.status_code
