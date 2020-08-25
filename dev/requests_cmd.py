@@ -82,7 +82,7 @@ def requests_cmd(
         url,
         alias=geturl_alias, 
         direpa_project=direpa_project,
-        hostname_path=None,
+        hostname_path=hostname_path,
         params=dict(),
     )
 
