@@ -86,6 +86,7 @@ def requests_cmd(
         params=dict(),
     )
 
+
     direpa_data=os.path.join(tempfile.gettempdir(), "_requests_cmd")
     os.makedirs(direpa_data, exist_ok=True)
     filenpa_data=os.path.join(direpa_data, "data")
@@ -106,7 +107,9 @@ def requests_cmd(
     #     return "={}".format(values)
     data={}
     for key, value in dy_input.items():
-        data[key]=getjson(dy_input[key])
+        if not (isinstance(value, dict) and isinstance(value, list)):
+            value=getjson(value)
+        data[key]=value
 
     if dy_files:
         data["files"]=dy_files
