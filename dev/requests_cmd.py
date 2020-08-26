@@ -49,6 +49,11 @@ def requests_cmd(
 ):
     import requests
     import tempfile
+    import logging
+
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+
 
     if url is None:
         msg.error("--url not set")
