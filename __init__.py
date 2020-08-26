@@ -2,7 +2,7 @@
 # author: Gabriel Auger
 # license: MIT
 
-__version__ = "0.11.3"
+__version__ = "0.12.0"
 
 from .dev.requests_cmd import requests_cmd
 from .gpkgs.options import Options

@@ -32,6 +32,7 @@ def requests_cmd(
     direpa_download=None,
     direpa_project=None,
     dy_input=dict(), # ["data", "params"] provide a dict value to any of these keys if needed
+    error_exit=True,
     exit_after=False,
     files=[],
     geturl_alias=None,
@@ -107,7 +108,7 @@ def requests_cmd(
     #     return "={}".format(values)
     data={}
     for key, value in dy_input.items():
-        if not (isinstance(value, dict) and isinstance(value, list)):
+        if not (isinstance(value, dict) or isinstance(value, list)):
             value=getjson(value)
         data[key]=value
 
@@ -166,7 +167,7 @@ def requests_cmd(
     if show_raw is True:
         pretty_print_request(response.request)   
     
-    response=get_reponse_content(show_http_code_info, show_http_code, response, show_output)
+    response=get_reponse_content(show_http_code_info, show_http_code, response, show_output, error_exit)
 
     r"""
 set id=44 && A:\wrk\r\requests_cmd\src\main.py --url api/attachments/download/__id__ --method get --auth-push --download --path C:\Users\user\AppData\Local\Temp
@@ -238,7 +239,7 @@ def pretty_print_request(req):
         req.body,
     ))
 
-def get_reponse_content(show_http_code_info, show_http_code, response, show_output=False):
+def get_reponse_content(show_http_code_info, show_http_code, response, show_output=False, error_exit=True):
     status_code=response.status_code
     get_status_code_info(show_http_code_info, show_http_code, status_code)
     if response.status_code == 200:
@@ -251,8 +252,12 @@ def get_reponse_content(show_http_code_info, show_http_code, response, show_outp
     else:
         if show_output is True:
             print_html_if(response.content.decode("utf-8"))
-        print("Error Status Code '{}'".format(status_code))
-        sys.exit(1)
+
+        if error_exit is True:
+            print("Error Status Code '{}'".format(status_code))
+            sys.exit(1)
+        else:
+            return response
 
 def print_html_if(text):
     if "<html>" in text:

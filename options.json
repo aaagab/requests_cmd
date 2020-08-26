@@ -14,6 +14,9 @@
     "download": {
         "args": "path"
     },
+    "error_no_exit": {
+        "info": "Use this argument to prevent program from exiting on request error"
+    },
     "examples": {
         "info": "show commands examples"
     },
