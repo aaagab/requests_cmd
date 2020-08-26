@@ -32,7 +32,7 @@ def requests_cmd(
     direpa_download=None,
     direpa_project=None,
     dy_input=dict(), # ["data", "params"] provide a dict value to any of these keys if needed
-    error_exit=True,
+    error_exit=False,
     exit_after=False,
     files=[],
     geturl_alias=None,
@@ -40,6 +40,7 @@ def requests_cmd(
     method=None,
     show_http_code=False,
     show_http_code_info=False,
+    show_http_code_pretty=False,
     show_output=False,
     show_raw=False,
     show_raw_before=False,
@@ -138,7 +139,6 @@ def requests_cmd(
     elif "json" in request_options and not dy_files:
         request_options["headers"].update({"Content-Type": "application/json"})
 
-    # if method in ["GET", "P:
     if download is True:
         request_options["stream"]=True
 
@@ -167,39 +167,70 @@ def requests_cmd(
     if show_raw is True:
         pretty_print_request(response.request)   
     
-    response=get_reponse_content(show_http_code_info, show_http_code, response, show_output, error_exit)
+    if response.ok is True:
+        r"""
+        set id=44 && A:\wrk\r\requests_cmd\src\main.py --url api/attachments/download/__id__ --method get --auth-push --download --path C:\Users\user\AppData\Local\Temp
+        set data="{ 'ids':['dd77a72b-c8f1-e911-b75a-00e04c680e1a']}" &&  A:\wrk\r\requests_cmd\src\main.py --url api/events/report --method post --auth-push --json __data__ --download --path C:\Users\user\AppData\Local\Temp
+            """
+        if download is True:
+            if response.status_code == 200:
+                value=response.headers.get("Content-Disposition")
+                if value is None:
+                    msg.error("Filename can't be found for download")
+                    sys.exit(1)
 
-    r"""
-set id=44 && A:\wrk\r\requests_cmd\src\main.py --url api/attachments/download/__id__ --method get --auth-push --download --path C:\Users\user\AppData\Local\Temp
-set data="{ 'ids':['dd77a72b-c8f1-e911-b75a-00e04c680e1a']}" &&  A:\wrk\r\requests_cmd\src\main.py --url api/events/report --method post --auth-push --json __data__ --download --path C:\Users\user\AppData\Local\Temp
-    """
-    if download is True:
-        if response.status_code == 200:
-            value=response.headers.get("Content-Disposition")
-            if value is None:
-                msg.error("Filename can't be found for download")
-                sys.exit(1)
+                filen_download = re.findall("filename=(.+)", value)[0]
+                if direpa_download is None:
+                    direpa_download=os.getcwd()
+                else:
+                    direpa_download=get_path(direpa_download)
+                filenpa_download=os.path.join(direpa_download, filen_download)
 
-            filen_download = re.findall("filename=(.+)", value)[0]
-            if direpa_download is None:
-                direpa_download=os.getcwd()
-            else:
-                direpa_download=get_path(direpa_download)
-            filenpa_download=os.path.join(direpa_download, filen_download)
+                with open(filenpa_download, 'wb') as f:
+                    shutil.copyfileobj(response.raw, f)
+                    msg.success("Saved '<cyan>{}</cyan>'".format(filenpa_download))
 
-            with open(filenpa_download, 'wb') as f:
-                shutil.copyfileobj(response.raw, f)
-                msg.success("Saved '<cyan>{}</cyan>'".format(filenpa_download))
+        if auth_pull is True:
+            with open(filenpa_data, "w") as f:
+                f.write(response.json())
+                print("Cookie Saved!")
 
-    if auth_pull is True:
-        with open(filenpa_data, "w") as f:
-            f.write(response.json())
-            print("Cookie Saved!")
+    if show_http_code is True:
+        print(response.status_code)
+
+    if show_http_code_pretty is True:
+        print("\n--> '{}' <--".format(response.status_code))
+
+    if show_http_code_info is True:
+        filenpa_status_code=os.path.join(os.path.dirname(os.path.realpath(__file__)), "status-codes.json")
+        with open(filenpa_status_code, "r") as f:
+            dy_status_codes=json.load(f)
+
+            for search_code in [
+                str(response.status_code)[0]+"xx",
+                str(response.status_code),
+            ]:
+                if search_code in dy_status_codes:
+                    dy=dy_status_codes[search_code]
+                    print_status_code(search_code, dy)
+                else:       
+                    msg.warning("status code not documented '{}'".format(response.status_code))
 
     if show_output is True:
         print_html_if(response.text)
 
+    if error_exit is True and response.ok is False:
+        print("Error Status Code '{}'".format(response.status_code))
+        sys.exit(1)
+
     return response
+
+def print_status_code(code, dy_code):
+    print("--> '{}' <--> '{}' <--\n{}".format(
+        code,
+        dy_code["phrase"],
+        textwrap.indent(dy_code["description"], "  ", lambda line: True),
+    ))
 
 def get_headers(method="GET", host="localhost", referer="http://localhost/", user_agent="firefox", cookie=None):
     # referer="http://lclwapps.edu/t/timeclock/1/login"
@@ -239,26 +270,6 @@ def pretty_print_request(req):
         req.body,
     ))
 
-def get_reponse_content(show_http_code_info, show_http_code, response, show_output=False, error_exit=True):
-    status_code=response.status_code
-    get_status_code_info(show_http_code_info, show_http_code, status_code)
-    if response.status_code == 200:
-        try:
-            return response
-        except:
-            print("Not Json Output")
-            print(response.headers)
-            print(response.text)
-    else:
-        if show_output is True:
-            print_html_if(response.content.decode("utf-8"))
-
-        if error_exit is True:
-            print("Error Status Code '{}'".format(status_code))
-            sys.exit(1)
-        else:
-            return response
-
 def print_html_if(text):
     if "<html>" in text:
         import html2text
@@ -296,30 +307,6 @@ def print_html_if(text):
         except:
             if text:
                 print("\n{}\n".format(text))
-
-def get_status_code_info(show_http_code_info, show_http_code, code):
-    filenpa_status_code=os.path.join(os.path.dirname(os.path.realpath(__file__)), "status-codes.json")
-    with open(filenpa_status_code, "r") as f:
-        dy_status_codes=json.load(f)
-        for search_code in [
-            str(code)[0]+"xx",
-            str(code),
-        ]:
-            if search_code in dy_status_codes:
-                dy=dy_status_codes[search_code]
-                if show_http_code_info is True:
-                    print_status_code(search_code, dy)
-                else:
-                    if search_code == str(code):
-                        if show_http_code is True:
-                            print("\n--> '{}' <--".format(code))
-
-def print_status_code(code, dy_code):
-    print("--> '{}' <--> '{}' <--\n{}".format(
-        code,
-        dy_code["phrase"],
-        textwrap.indent(dy_code["description"], "  ", lambda line: True),
-    ))
 
 # Host: lclwapps.edu
 # User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:67.0) Gecko/20100101 Firefox/67.0

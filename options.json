@@ -14,8 +14,8 @@
     "download": {
         "args": "path"
     },
-    "error_no_exit": {
-        "info": "Use this argument to prevent program from exiting on request error"
+    "error_exit": {
+        "info": "Use this argument to exit program with code 1 if request response is not ok"
     },
     "examples": {
         "info": "show commands examples"
@@ -37,8 +37,15 @@
         "info": "In order to complete the url, you can provide a string, or a path relative or absolute. If the argument is not provided and the url does not start with http, a env variable HOSTNAME_URL is searched, then a file named hostname_url.txt is searched in the project directory and if none an error is thrown.",
         "values": "FILE_STRING"
     },
-    "http_code": {},
-    "http_code_info": {},
+    "code": {
+        "info": "print http code to console"
+    },
+    "code_info": {
+        "info": "print http code with information to console"
+    },
+    "code_pretty": {
+        "info": "sort of pretty print http code to console"
+    },
     "json": {
         "info": "You can provide a json file path relative or absolute or you can use a json string. If for a given key a value equals '__hidden__' then you are going to be prompted to type it in the terminal. For json terminal string use this syntax \"{\\\"marc\\\": \\\"__input__\\\"}\" or \"{'marc': '__input__'}\" . this option send data in body in json form. ex: b'{\"email\": \"email@myemail.com\", \"password\": \"mypass\"}'. This is the format to use for complex json object ",
         "values": "JSON_OR_FILE"
