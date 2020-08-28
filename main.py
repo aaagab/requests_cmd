@@ -56,7 +56,7 @@ if __name__ == "__main__":
         direpa_download=args.path.value,
         direpa_project=args.path_project.value,
         dy_input=dy_input,
-        error_exit=args.error_exit.here,
+        error_exit=args.error_continue.here == False,
         exit_after=args.exit.here,
         files=args.files.values,
         geturl_alias=url_alias,

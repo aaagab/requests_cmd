@@ -14,8 +14,8 @@
     "download": {
         "args": "path"
     },
-    "error_exit": {
-        "info": "Use this argument to exit program with code 1 if request response is not ok"
+    "error_continue": {
+        "info": "Use this argument to discard exit program if request response is not ok"
     },
     "examples": {
         "info": "show commands examples"
