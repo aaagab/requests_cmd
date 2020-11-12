@@ -1,15 +1,8 @@
 #!/usr/bin/env python3
-import json
-from pprint import pprint
-import re
-import os
-import sys
-import subprocess
-import shlex
+# from pprint import pprint
 
 if __name__ == "__main__":
     import sys, os
-
     import importlib
     direpa_script=os.path.dirname(os.path.realpath(__file__))
     direpa_script_parent=os.path.dirname(direpa_script)
