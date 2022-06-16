@@ -12,7 +12,7 @@
         "values": "JSON_OR_FILE"
     },
     "download": {
-        "args": "path"
+        "args": "path,filen"
     },
     "error_continue": {
         "info": "Use this argument to discard exit program if request response is not ok"
@@ -23,6 +23,11 @@
     "exit": {
         "info": "Exit after command",
         "nested": true
+    },
+    "filen": {
+        "info": "filename",
+        "nested": true,
+        "values": "FILENAME"
     },
     "files": {
         "info": "Give file path (relative or absolute) to send with a POST method, apparently any other data should be sent with --data (to confirm)",
