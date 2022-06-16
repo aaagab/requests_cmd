@@ -17,7 +17,7 @@
         "MIT"
     ],
     "name": "requests_cmd",
-    "timestamp": 1655402429.7295609,
+    "timestamp": 1655402562.7701318,
     "uuid4": "10e47dc7-10eb-4fa7-97d8-81b4405ade06",
-    "version": "1.4.0"
+    "version": "1.4.1"
 }
