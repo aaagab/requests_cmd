@@ -22,6 +22,7 @@ if __name__ == "__main__":
     requests_cmd --url https://www.example.com/e/example/api/attachements/upload --method post --data  A:\wrk\e\example\1\src\_requests\uploadFile.json --auth-push --output --files "A:\wrk\e\example\1\src\_tests\browser\files\file6.txt"
         
     requests_cmd --url api/attachments/download --params "{\"id\":4}" --auth-push --download --path C:\Users\user\AppData\Local\Temp
+    requests_cmd --url api/attachments/download --params "{\"id\":4}" --auth-push --download --filen custom-name.txt
     requests_cmd --url api/session --path-project A:\wrk\e\example\1\src --output
 
     # script example
@@ -51,6 +52,7 @@ if __name__ == "__main__":
         dy_input=dy_input,
         error_exit=args.error_continue.here == False,
         exit_after=args.exit.here,
+        filen_download=args.filen.value,
         files=args.files.values,
         geturl_alias=url_alias,
         hostname_path=args.hostname.value,

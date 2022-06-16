@@ -34,6 +34,7 @@ def requests_cmd(
     dy_input=dict(), # ["data", "params"] provide a dict value to any of these keys if needed
     error_exit=False,
     exit_after=False,
+    filen_download=None,
     files=[],
     geturl_alias=None,
     hostname_path=None,
@@ -184,17 +185,26 @@ def requests_cmd(
                     msg.error("Filename can't be found for download")
                     sys.exit(1)
 
-                filen_download = re.findall("filename=(.+)", value)[0]
                 if direpa_download is None:
                     direpa_download=os.getcwd()
                 else:
                     direpa_download=get_path(direpa_download)
+
+                if filen_download is None:
+                    reg_str=r"^.*filename=(?:\"?|\')(.+?)(?:\"|\')?$"
+                    reg=re.match(reg_str, value)
+                    if reg:
+                        filen_download=reg.group(1)
+                    else:
+                        msg.error("value '{}' does not match regex '{}'".format(value, reg_str), exit=1)
+
                 filenpa_download=os.path.join(direpa_download, filen_download)
 
                 with open(filenpa_download, 'wb') as f:
                     shutil.copyfileobj(response.raw, f)
                     msg.success("Saved '<cyan>{}</cyan>'".format(filenpa_download))
 
+                
         if auth_pull is True:
             with open(filenpa_data, "w") as f:
                 f.write(response.json())
