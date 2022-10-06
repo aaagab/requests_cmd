@@ -102,8 +102,9 @@ def requests_cmd(
     cookie=None
     if auth_push is True:
         if not os.path.exists(filenpa_data):
-            msg.error("Authentication File not found '{}'".format(filenpa_data))
-            sys.exit(1)
+            open(filenpa_data, "w").close()
+            # msg.error("Authentication File not found '{}'".format(filenpa_data))
+            # sys.exit(1)
         with open(filenpa_data, "r") as f:
             cookie=f.read()
 
