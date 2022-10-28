@@ -11,6 +11,13 @@ import sys
 import tempfile
 import textwrap
 
+yaml_enabled=True
+try:
+    import yaml
+except ModuleNotFoundError:
+    yaml_enabled=False
+
+
 # from .args import get_arg_values
 
 from ..gpkgs import message as msg
@@ -94,7 +101,6 @@ def requests_cmd(
         params=dict(),
     )
 
-
     direpa_data=os.path.join(tempfile.gettempdir(), "_requests_cmd")
     os.makedirs(direpa_data, exist_ok=True)
     filenpa_data=os.path.join(direpa_data, "data")
@@ -117,7 +123,14 @@ def requests_cmd(
     data={}
     for key, value in dy_input.items():
         if not (isinstance(value, dict) or isinstance(value, list)):
-            value=getjson(value)
+            if value[-5:] == ".yaml":
+                filenpa_yaml=get_path(value)
+                if yaml_enabled is False:
+                    msg.error("Can't process '{}'. pyyaml not found please install it with pip install pyyaml".format(filenpa_yaml), exit=1)
+                with open(filenpa_yaml, "r") as f:
+                    value=yaml.safe_load(f)
+            else:
+                value=getjson(value)
         data[key]=value
 
     if dy_files:
