@@ -38,11 +38,11 @@ def requests_cmd(
     download=False,
     direpa_download=None,
     direpa_project=None,
-    dy_input=dict(), # ["data", "params"] provide a dict value to any of these keys if needed
+    dy_input=None, # ["data", "params"] provide a dict value to any of these keys if needed
     error_exit=False,
     exit_after=False,
     filen_download=None,
-    files=[],
+    files=None,
     geturl_alias=None,
     hostname_path=None,
     method=None,
@@ -62,6 +62,14 @@ def requests_cmd(
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
 
+    if dy_input is None:
+        dy_input=dict()
+
+    if files is None:
+        files=[]
+    else:
+        if not isinstance(files, list):
+            msg.error("Files wrong type {}, type must be {}".format(type(files), list), exit=1)
 
     if url is None:
         msg.error("--url not set")
