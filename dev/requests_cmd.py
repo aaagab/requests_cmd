@@ -36,6 +36,7 @@ def requests_cmd(
     auth_pull=False,
     auth_push=False,
     download=False,
+    filenpa_token=None,
     direpa_download=None,
     direpa_project=None,
     dy_input=None, # ["data", "params"] provide a dict value to any of these keys if needed
@@ -109,17 +110,17 @@ def requests_cmd(
         params=dict(),
     )
 
-    direpa_data=os.path.join(tempfile.gettempdir(), "_requests_cmd")
-    os.makedirs(direpa_data, exist_ok=True)
-    filenpa_data=os.path.join(direpa_data, "data")
+    if filenpa_token is None:
+        filenpa_token=os.path.join(tempfile.gettempdir(), "_requests_cmd", "data")
+    os.makedirs(os.path.dirname(filenpa_token), exist_ok=True)
 
     cookie=None
     if auth_push is True:
-        if not os.path.exists(filenpa_data):
-            open(filenpa_data, "w").close()
-            # msg.error("Authentication File not found '{}'".format(filenpa_data))
+        if not os.path.exists(filenpa_token):
+            open(filenpa_token, "w").close()
+            # msg.error("Authentication File not found '{}'".format(filenpa_token))
             # sys.exit(1)
-        with open(filenpa_data, "r") as f:
+        with open(filenpa_token, "r") as f:
             cookie=f.read()
 
 
@@ -228,7 +229,7 @@ def requests_cmd(
 
                 
         if auth_pull is True:
-            with open(filenpa_data, "w") as f:
+            with open(filenpa_token, "w") as f:
                 f.write(response.json())
                 print("Cookie Saved!")
 
