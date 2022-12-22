@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# from pprint import pprint
 
 if __name__ == "__main__":
     import sys, os
@@ -11,64 +10,35 @@ if __name__ == "__main__":
     pkg=importlib.import_module(module_name)
     del sys.path[0]
 
-    args, dy_app=pkg.Options(filenpa_app="gpm.json", filenpa_args="options.json", allow_empty=True, cli_expand=True).get_argsns_dy_app()
-
-    if args.examples.here:
-        print(r"""
-    requests_cmd --url api/users/me --hostname A:\wrk\e\example\1\src\url_hostname.txt --output
-    requests_cmd --url api/users/me --hostname --output
-    requests_cmd --url https://www.example.com/e/example/api/account/login --method post --data A:\wrk\e\example\1\src\_requests\post.json --auth-pull
-    requests_cmd --url https://www.example.com/e/example/api/users/me --method get --auth-push --output
-    requests_cmd --url https://www.example.com/e/example/api/attachements/upload --method post --data  A:\wrk\e\example\1\src\_requests\uploadFile.json --auth-push --output --files "A:\wrk\e\example\1\src\_tests\browser\files\file6.txt"
-        
-    requests_cmd --url api/attachments/download --params "{\"id\":4}" --auth-push --download --path C:\Users\user\AppData\Local\Temp
-    requests_cmd --url api/attachments/download --params "{\"id\":4}" --auth-push --download --filen custom-name.txt
-    requests_cmd --url api/session --path-project A:\wrk\e\example\1\src --output
-
-    # script example
-    response=pkg.requests_cmd(url="https://www.example.com/e/example/api/users/me")
-    pprint(dir(response))
-    print(response.status_code)
-    pprint(response.json())
-        """) 
-        sys.exit(0)
-
-    dy_input=dict()
-    for arg_str in ["data", "json", "params"]:
-        arg=dy_app["args"][arg_str]
-        if arg.here:
-            dy_input[arg_str]=arg.value
-
-    url_alias=args.url_alias.value
-    if url_alias is None:
-        url_alias="hostname_url"
+    args=pkg.Nargs(
+        options_file="config/options.yaml",
+        metadata=dict(executable="requests_cmd"),
+    ).get_args()
 
     pkg.requests_cmd(
-        auth_pull=args.auth_pull.here,
-        auth_push=args.auth_push.here,
-        download=args.download.here,
-        direpa_download=args.path.value,
-        direpa_project=args.path_project.value,
-        dy_input=dy_input,
-        error_exit=args.error_continue.here == False,
-        exit_after=args.exit.here,
-        filen_download=args.filen.value,
-        files=args.files.values,
-        geturl_alias=url_alias,
-        hostname_path=args.hostname.value,
-        method=args.method.value,
-        show_http_code=args.code.here,
-        show_http_code_info=args.code_info.here,
-        show_http_code_pretty=args.code_pretty.here,
-        show_output=args.get_output.here,
-        show_raw=args.raw.here,
-        show_raw_before=args.raw_before.here,
-        url=args.url.value,
+        auth_pull=args.auth.pull._here,
+        auth_push=args.auth.push._here,
+        download=args.download._here,
+        direpa_download=args.download._value,
+        direpa_project=args.project_path._value,
+        error_exit=args.error_continue._here == False,
+        filen_download=args.download.filen._value,
+        filenpa_token=args.auth.push.token._value,
+        files=args.input.files._values,
+        files_data=args.input.files.data._value,
+        hostname_path=args.hostname._value,
+        input_data=args.input.data._value,
+        input_data_not_json=args.input.data.not_json._here,
+        input_json=args.input.json._value,
+        input_params=args.input.params._value,
+        method=args.method._value,
+        show_http_code=args.http_code._here,
+        show_http_code_info=args.http_code.info._here,
+        show_http_code_pretty=args.http_code.pretty._here,
+        show_output=args.output._here,
+        show_raw=args.raw._here,
+        show_raw_before=args.raw_before._here,
+        show_raw_before_exit=args.raw_before.exit._here,
+        url=args.url._value,
+        url_alias=args.url_alias._value,
     )
-
-
-    ## script example
-    # response=pkg.requests_cmd(url="https://www.example.com/e/example/api/users/me")
-    # pprint(dir(response))
-    # print(response.status_code)
-    # pprint(response.json())
