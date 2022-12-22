@@ -48,11 +48,11 @@ def requests_cmd(
     error_exit=False,
     filen_download=None,
     filenpa_token=None,
-    files=None,
-    files_data=None,
     hostname_path=None,
     input_data=None,
     input_data_not_json=False,
+    input_files=None,
+    input_files_data=None,
     input_json=None,
     input_params=None,
     method=None,
@@ -74,31 +74,31 @@ def requests_cmd(
     if url_alias is None:
         url_alias="hostname_url"
 
-    if files is not None:
-        if not isinstance(files, list):
+    if input_files is not None:
+        if not isinstance(input_files, list):
             msg.error("files must be of type {}".format(list), exit=1)
 
     _input=dict()
     has_data=input_data is not None
     has_json=input_json is not None
     has_files=None
-    if files is None or len(files) == 0:
-        has_files=files_data is not None
+    if input_files is None or len(input_files) == 0:
+        has_files=input_files_data is not None
     else:
-        has_files=files_data is not None
+        has_files=input_files_data is not None
 
     if has_data:
         if has_json:
             msg.error("input_data can't be set when input_json is set.", exit=1)
         if has_files:
-            msg.error("input_data can't be set when files is set or files_data is set.", exit=1)
+            msg.error("input_data can't be set when input_files is set or input_files_data is set.", exit=1)
         if input_data_not_json is True:
             _input["data"]=input_data
         else:
             _input["data"]=get_data_value(input_data)
     elif has_json:
         if has_files:
-            msg.error("input_json can't be set when files is set or files_data is set.", exit=1)
+            msg.error("input_json can't be set when input_files is set or input_files_data is set.", exit=1)
 
         _input["json"]=get_data_value(input_json)
 
@@ -139,26 +139,26 @@ def requests_cmd(
             cookie=f.read()
 
 
-    if files_data is None:
-        if files is None or len(files) == 0:
+    if input_files_data is None:
+        if input_files is None or len(input_files) == 0:
             pass
         else:
-            if len(files) > 0:
-                _input["files"]=get_files(files)
+            if len(input_files) > 0:
+                _input["files"]=get_files(input_files)
     else:
-        tmp_data=get_data_value(files_data)
+        tmp_data=get_data_value(input_files_data)
         _input["data"]=dict()
         for key, value in tmp_data.items():
             _input["data"][key]=json.dumps(value)
 
         if not isinstance(_input["data"], dict):
-            msg.error("files_data must be of type {}".format(dict), exit=1)
+            msg.error("input_files_data must be of type {}".format(dict), exit=1)
 
-        if files is None or len(files)  == 0:
+        if input_files is None or len(input_files)  == 0:
             # send an empty file to be able to send data with content-type application/x-www-form-urlencoded
             _input["files"]=[("", None)]
         else:                
-            _input["files"]=get_files(files)
+            _input["files"]=get_files(input_files)
 
     request_options = dict(
         headers=get_headers(cookie=cookie),
@@ -256,7 +256,6 @@ def get_files(files):
         tmp_files.append(
             (os.path.basename(tmp_file), open(tmp_file, "rb")),
         )
-
     return tmp_files
 
 def print_status_code(code, dy_code):
