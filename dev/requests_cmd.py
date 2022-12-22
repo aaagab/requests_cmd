@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pprint import pprint
+import logging
 import json
 import os
 import re
@@ -8,7 +9,6 @@ import shutil
 import sys
 import tempfile
 import textwrap
-
 
 yaml_enabled=True
 try:
