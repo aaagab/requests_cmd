@@ -2,12 +2,12 @@ args:
   _examples: |
     requests_cmd --url api/users/me --hostname A:\wrk\a\apple\1\src\url_hostname.txt --output
     requests_cmd --url api/users/me --hostname --output
-    requests_cmd --url https://domain/api/account/login --method post --data A:\wrk\a\apple\1\src\_requests\post.json --auth-pull
-    requests_cmd --url https://domain/api/users/me --method get --auth-push --output
-    requests_cmd --url https://domain/api/attachements/upload --method post --data  A:\wrk\a\apple\1\src\_requests\uploadFile.json --auth-push --output --files "A:\wrk\a\apple\1\src\_tests\browser\files\file6.txt"
+    requests_cmd --url https://domain/api/account/login --method post --data A:\wrk\a\apple\1\src\_requests\post.json --auth --pull
+    requests_cmd --url https://domain/api/users/me --method get --auth --push --output
+    requests_cmd --url https://domain/api/attachements/upload --method post --data  A:\wrk\a\apple\1\src\_requests\uploadFile.json --auth --push --output --files "A:\wrk\a\apple\1\src\_tests\browser\files\file6.txt"
         
-    requests_cmd --url api/attachments/download --params "{\"id\":4}" --auth-push --download --path C:\Users\user\AppData\Local\Temp
-    requests_cmd --url api/attachments/download --params "{\"id\":4}" --auth-push --download --filen custom-name.txt
+    requests_cmd --url api/attachments/download --input-params "{\"id\":4}" --auth --push --download --path C:\Users\user\AppData\Local\Temp
+    requests_cmd --url api/attachments/download --input-params "{\"id\":4}" --auth --push --download --filen custom-name.txt
     requests_cmd --url api/session --path-project A:\wrk\a\apple\1\src --output
 
     # script example
@@ -32,14 +32,16 @@ args:
     filen:
       _info: "filename"
       _label: "FILENAME"
-  error_continue:
-    _info: "Use this argument to discard exit program if request response is not ok"
 
   hostname:
     _info: "In order to complete the url, you can provide a string, or a path relative or absolute. If the argument is not provided and the url does not start with http, a env variable HOSTNAME_URL is searched, then a file named hostname_url.txt is searched in the project directory and if none an error is thrown."
     _label: "FILE_STRING"
 
+  ignore_error:
+    _info: "Use this argument to discard exit program if request response is not ok"
+
   input:
+    _aliases: --input,-i
     _xor: data,json,files
     data:
       _type: "str"
@@ -68,21 +70,24 @@ args:
 
   method:
     _aliases: "--method,-m"
-    _info: "select a method from GET, POST, VALUE, DELETE (default GET)"
-    _label: "NAME"
+    _info: "select a method from DELETE, GET, POST, PUT (default GET)"
+    _in: delete,get,post,put
   output:
+    _aliases: --output,-o
     _info: "print request output"
 
   project_path:
     _info: "mainly use to get the hostname info for the relative url. If not set path project is the current directory."
     _label: "PATH"
+
   raw:
     _info: "Show raw request"
-  raw_before:
-    _info: "Show raw request before it is send"
-    exit:
-      _info: "Exit after command"
+    before:
+      _info: "Show raw request before it is send"
+      exit:
+        _info: "Exit after command"
+
   url:
     _label: "URL"
-  url_alias:
-    _info: "default is hostname_url"
+    alias:
+      _info: "default is hostname_url"
