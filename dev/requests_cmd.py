@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-import ast
-from copy import deepcopy
-import json
-from getpass import getpass
-import os
 from pprint import pprint
+import json
+import os
 import re
+import requests
 import shutil
 import sys
 import tempfile
 import textwrap
+
 
 yaml_enabled=True
 try:
@@ -17,35 +16,45 @@ try:
 except ModuleNotFoundError:
     yaml_enabled=False
 
-
-# from .args import get_arg_values
-
 from ..gpkgs import message as msg
-from ..gpkgs.json_config import Json_config
-from ..gpkgs.prompt import prompt
 from ..gpkgs.geturl import geturl
 from ..gpkgs.getjson import getjson
-
 
 def get_path(file_path):
     if not os.path.isabs(file_path):
         file_path=os.path.abspath(file_path)
     return os.path.normpath(file_path)
 
+def get_data_value(value):
+    if (isinstance(value, dict) or isinstance(value, list)):
+        return value
+    else:
+        if value[-5:] == ".yaml":
+            filenpa_yaml=get_path(value)
+            if yaml_enabled is False:
+                msg.error("Can't process '{}'. pyyaml not found please install it with pip install pyyaml".format(filenpa_yaml), exit=1)
+            with open(filenpa_yaml, "r") as f:
+                value=yaml.safe_load(f)
+        else:
+            value=getjson(value)
+        return value
+
 def requests_cmd(
     auth_pull=False,
     auth_push=False,
     download=False,
-    filenpa_token=None,
     direpa_download=None,
     direpa_project=None,
-    dy_input=None, # ["data", "params"] provide a dict value to any of these keys if needed
     error_exit=False,
-    exit_after=False,
     filen_download=None,
+    filenpa_token=None,
     files=None,
-    geturl_alias=None,
+    files_data=None,
     hostname_path=None,
+    input_data=None,
+    input_data_not_json=False,
+    input_json=None,
+    input_params=None,
     method=None,
     show_http_code=False,
     show_http_code_info=False,
@@ -53,30 +62,53 @@ def requests_cmd(
     show_output=False,
     show_raw=False,
     show_raw_before=False,
-    return_content=False,
+    show_raw_before_exit=False,
     url=None,
+    url_alias=None,
 ):
-    import requests
-    import tempfile
-    import logging
 
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
+    requests.packages.urllib3.disable_warnings()
 
-    if dy_input is None:
-        dy_input=dict()
+    if url_alias is None:
+        url_alias="hostname_url"
 
-    if files is None:
-        files=[]
-    else:
+    if files is not None:
         if not isinstance(files, list):
-            msg.error("Files wrong type {}, type must be {}".format(type(files), list), exit=1)
+            msg.error("files must be of type {}".format(list), exit=1)
+
+    _input=dict()
+    has_data=input_data is not None
+    has_json=input_json is not None
+    has_files=None
+    if files is None or len(files) == 0:
+        has_files=files_data is not None
+    else:
+        has_files=files_data is not None
+
+    if has_data:
+        if has_json:
+            msg.error("input_data can't be set when input_json is set.", exit=1)
+        if has_files:
+            msg.error("input_data can't be set when files is set or files_data is set.", exit=1)
+        if input_data_not_json is True:
+            _input["data"]=input_data
+        else:
+            _input["data"]=get_data_value(input_data)
+    elif has_json:
+        if has_files:
+            msg.error("input_json can't be set when files is set or files_data is set.", exit=1)
+
+        _input["json"]=get_data_value(input_json)
+
+    if input_params is not None:
+        _input["params"]=get_data_value(input_params)
 
     if url is None:
-        msg.error("--url not set")
+        msg.error("url not set")
         sys.exit(1)
 
-    requests.packages.urllib3.disable_warnings()
     methods=[ "DELETE", "GET", "POST", "PUT"]
 
     if method is None:
@@ -87,24 +119,9 @@ def requests_cmd(
     if method not in methods:
         msg.error("Method not Found '{}' in {}".format(method, methods), exit=1)
 
-    if len(files) > 0:
-        if method != "POST":
-            msg.error("--files can only be sent with a POST method", exit=1)
-        for key in dy_input:
-            if key != "data":
-                msg.error("Not authorized '{}'".format(key),"If you send data when posting files only 'data' argument is authorized", exit=1)
-
-    dy_files=dict()
-    for i in range(len(files)):
-        files[i]=get_path(files[i])
-        if not os.path.exists(files[i]):
-            msg.error("For --files file not found '{}'".format(files[i]), exit=1)
-        temp_name = next(tempfile._get_candidate_names())
-        dy_files["upload_"+temp_name]=open(files[i], "rb")
-
     url=geturl(
         url,
-        alias=geturl_alias, 
+        alias=url_alias, 
         direpa_project=direpa_project,
         hostname_path=hostname_path,
         params=dict(),
@@ -118,55 +135,35 @@ def requests_cmd(
     if auth_push is True:
         if not os.path.exists(filenpa_token):
             open(filenpa_token, "w").close()
-            # msg.error("Authentication File not found '{}'".format(filenpa_token))
-            # sys.exit(1)
         with open(filenpa_token, "r") as f:
             cookie=f.read()
 
 
-    # I am not taking care of that case anymore but at some point I should
-    # for [FromBody]
-    # =john
-    # if ":" not in values:
-    #     return "={}".format(values)
-    data={}
-    for key, value in dy_input.items():
-        if not (isinstance(value, dict) or isinstance(value, list)):
-            if value[-5:] == ".yaml":
-                filenpa_yaml=get_path(value)
-                if yaml_enabled is False:
-                    msg.error("Can't process '{}'. pyyaml not found please install it with pip install pyyaml".format(filenpa_yaml), exit=1)
-                with open(filenpa_yaml, "r") as f:
-                    value=yaml.safe_load(f)
-            else:
-                value=getjson(value)
-        data[key]=value
+    if files_data is None:
+        if files is None or len(files) == 0:
+            pass
+        else:
+            if len(files) > 0:
+                _input["files"]=get_files(files)
+    else:
+        _input["data"]=get_data_value(files_data)
+        if not isinstance(_input["data"], dict):
+            msg.error("files_data must be of type {}".format(dict), exit=1)
 
-    if dy_files:
-        data["files"]=dy_files
-        if "data" in data:
-            if len(data["data"]) != 1:
-                msg.error(
-                    "For data for formData the dict must have a main root key",
-                    "The main root key is going to be the name of the part",
-                    "Here you have multiple keys {}".format(sorted(data["data"])),
-                    exit=1    
-                )
-            key=next(iter(data["data"]))
-            value=json.dumps(data["data"][key])
-            data["data"]={ key: value }
+        if files is None or len(files)  == 0:
+            # send an empty file to be able to send data with content-type application/x-www-form-urlencoded
+            _input["files"]=[("", None)]
+        else:                
+            _input["files"]=get_files(files)
 
     request_options = dict(
         headers=get_headers(cookie=cookie),
         verify=False,
-        **data,
+        **_input,
     )
 
-    # if using keyword data or json then the format of the data is set to urlencoded for data and application/json for json. It happens even if you modifiy the headers content-type
-    if "data" in request_options and not dy_files:
+    if has_data:
         request_options["headers"].update({"Content-Type": "application/x-www-form-urlencoded"})
-    elif "json" in request_options and not dy_files:
-        request_options["headers"].update({"Content-Type": "application/json"})
 
     if download is True:
         request_options["stream"]=True
@@ -175,32 +172,17 @@ def requests_cmd(
         del request_options["verify"]
         before_request=requests.Request(method,url,**request_options).prepare()
         pretty_print_request(before_request)
-        if exit_after is True:
+        if show_raw_before_exit is True:
             sys.exit(0)
         else:
             request_options["verify"]=False
 
     response=getattr( requests, method.lower())(url, **request_options)
 
-    # from urllib3.filepost import encode_multipart_formdata, choose_boundary
-
-    # def encode_multipart_related(fields, boundary=None):
-    #     if boundary is None:
-    #         boundary = choose_boundary()
-
-    #     body, _ = encode_multipart_formdata(fields, boundary)
-    #     content_type = str('multipart/related; boundary=%s' % boundary)
-
-    #     return body, content_type
-
     if show_raw is True:
         pretty_print_request(response.request)   
     
     if response.ok is True:
-        r"""
-        set id=44 && A:\wrk\r\requests_cmd\src\main.py --url api/attachments/download/__id__ --method get --auth-push --download --path C:\Users\user\AppData\Local\Temp
-        set data="{ 'ids':['dd77a72b-c8f1-e911-b75a-00e04c680e1a']}" &&  A:\wrk\r\requests_cmd\src\main.py --url api/events/report --method post --auth-push --json __data__ --download --path C:\Users\user\AppData\Local\Temp
-            """
         if download is True:
             if response.status_code == 200:
                 value=response.headers.get("Content-Disposition")
@@ -227,32 +209,30 @@ def requests_cmd(
                     shutil.copyfileobj(response.raw, f)
                     msg.success("Saved '<cyan>{}</cyan>'".format(filenpa_download))
 
-                
         if auth_pull is True:
             with open(filenpa_token, "w") as f:
                 f.write(response.json())
-                print("Cookie Saved!")
 
     if show_http_code is True:
-        print(response.status_code)
+        if show_http_code_pretty is True:
+            print("\n--> '{}' <--".format(response.status_code))
+        elif show_http_code_info is True:
+            filenpa_status_code=os.path.join(os.path.dirname(os.path.realpath(__file__)), "status-codes.json")
+            with open(filenpa_status_code, "r") as f:
+                dy_status_codes=json.load(f)
 
-    if show_http_code_pretty is True:
-        print("\n--> '{}' <--".format(response.status_code))
+                for search_code in [
+                    str(response.status_code)[0]+"xx",
+                    str(response.status_code),
+                ]:
+                    if search_code in dy_status_codes:
+                        dy=dy_status_codes[search_code]
+                        print_status_code(search_code, dy)
+                    else:       
+                        msg.warning("status code not documented '{}'".format(response.status_code))
+        else:
+            print(response.status_code)
 
-    if show_http_code_info is True:
-        filenpa_status_code=os.path.join(os.path.dirname(os.path.realpath(__file__)), "status-codes.json")
-        with open(filenpa_status_code, "r") as f:
-            dy_status_codes=json.load(f)
-
-            for search_code in [
-                str(response.status_code)[0]+"xx",
-                str(response.status_code),
-            ]:
-                if search_code in dy_status_codes:
-                    dy=dy_status_codes[search_code]
-                    print_status_code(search_code, dy)
-                else:       
-                    msg.warning("status code not documented '{}'".format(response.status_code))
 
     if show_output is True:
         print_html_if(response.text)
@@ -263,6 +243,18 @@ def requests_cmd(
 
     return response
 
+def get_files(files):
+    tmp_files=[]
+    for elem in files:
+        tmp_file=get_path(elem)
+        if not os.path.exists(tmp_file):
+            msg.error("File not found '{}'.".format(tmp_file), exit=1)
+        tmp_files.append(
+            (os.path.basename(tmp_file), open(tmp_file, "rb")),
+        )
+
+    return tmp_files
+
 def print_status_code(code, dy_code):
     print("--> '{}' <--> '{}' <--\n{}".format(
         code,
@@ -271,8 +263,6 @@ def print_status_code(code, dy_code):
     ))
 
 def get_headers(method="GET", host="localhost", referer="http://localhost/", user_agent="firefox", cookie=None):
-    # referer="http://lclwapps.edu/t/timeclock/1/login"
-    # host="lclwapps.edu"
     user_agents=dict(
         chrome="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36",
         edge="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763",
@@ -313,7 +303,6 @@ def print_html_if(text):
         import html2text
         h = html2text.HTML2Text()
         h.ignore_links = False
-        # print(h.handle(text))
         previous_blank=False
         print()
         for line in h.handle(text).splitlines():
@@ -345,16 +334,3 @@ def print_html_if(text):
         except:
             if text:
                 print("\n{}\n".format(text))
-
-# Host: lclwapps.edu
-# User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:67.0) Gecko/20100101 Firefox/67.0
-# Accept: application/json, text/plain, */*
-# Accept-Language: en-US,en;q=0.5
-# Accept-Encoding: gzip, deflate
-# Referer: http://lclwapps.edu/t/timeclock/1/login
-# Content-Type: application/json;charset=utf-8
-# Content-Length: 59
-# DNT: 1
-# Connection: keep-alive
-# Pragma: no-cache
-# Cache-Control: no-cache

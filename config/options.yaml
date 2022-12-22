@@ -1,0 +1,88 @@
+args:
+  _examples: |
+    requests_cmd --url api/users/me --hostname A:\wrk\a\apple\1\src\url_hostname.txt --output
+    requests_cmd --url api/users/me --hostname --output
+    requests_cmd --url https://domain/api/account/login --method post --data A:\wrk\a\apple\1\src\_requests\post.json --auth-pull
+    requests_cmd --url https://domain/api/users/me --method get --auth-push --output
+    requests_cmd --url https://domain/api/attachements/upload --method post --data  A:\wrk\a\apple\1\src\_requests\uploadFile.json --auth-push --output --files "A:\wrk\a\apple\1\src\_tests\browser\files\file6.txt"
+        
+    requests_cmd --url api/attachments/download --params "{\"id\":4}" --auth-push --download --path C:\Users\user\AppData\Local\Temp
+    requests_cmd --url api/attachments/download --params "{\"id\":4}" --auth-push --download --filen custom-name.txt
+    requests_cmd --url api/session --path-project A:\wrk\a\apple\1\src --output
+
+    # script example
+    response=pkg.requests_cmd(url="https://domain/api/users/me")
+    pprint(dir(response))
+    print(response.status_code)
+    pprint(response.json())
+
+
+  auth:
+    _need_child: true
+    pull:
+      _info: "save authentication cookie to a tmp location"
+    push:
+      _info: "retrieve authentication cookie from tmp location and add it to request headers"
+      token:
+        _type: file
+
+  download:
+    _type: dir
+    _values: "?"
+    filen:
+      _info: "filename"
+      _label: "FILENAME"
+  error_continue:
+    _info: "Use this argument to discard exit program if request response is not ok"
+
+  hostname:
+    _info: "In order to complete the url, you can provide a string, or a path relative or absolute. If the argument is not provided and the url does not start with http, a env variable HOSTNAME_URL is searched, then a file named hostname_url.txt is searched in the project directory and if none an error is thrown."
+    _label: "FILE_STRING"
+
+  input:
+    _xor: data,json,files
+    data:
+      _type: "str"
+      not_json:
+        _info: if set then data value will not be converted to json.
+    files:
+      _info: "Give file path (relative or absolute) to send with a POST or PUT method, apparently any other data should be sent with --data (to confirm)"
+      _label: "FILE_PATH"
+      _values: "*"
+      data:
+        _info: "multipart/form-data"
+        _type: "str"
+    json:
+      _type: "str"
+    params:
+      _info: "Add url parameters"
+      _type: "str"
+
+  http_code:
+    _info: "print http code to console"
+    _xor: info,pretty
+    info:
+      _info: "print http code with information to console"
+    pretty:
+      _info: "sort of pretty print http code to console"
+
+  method:
+    _aliases: "--method,-m"
+    _info: "select a method from GET, POST, VALUE, DELETE (default GET)"
+    _label: "NAME"
+  output:
+    _info: "print request output"
+
+  project_path:
+    _info: "mainly use to get the hostname info for the relative url. If not set path project is the current directory."
+    _label: "PATH"
+  raw:
+    _info: "Show raw request"
+  raw_before:
+    _info: "Show raw request before it is send"
+    exit:
+      _info: "Exit after command"
+  url:
+    _label: "URL"
+  url_alias:
+    _info: "default is hostname_url"
