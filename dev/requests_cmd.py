@@ -146,7 +146,11 @@ def requests_cmd(
             if len(files) > 0:
                 _input["files"]=get_files(files)
     else:
-        _input["data"]=get_data_value(files_data)
+        tmp_data=get_data_value(files_data)
+        _input["data"]=dict()
+        for key, value in tmp_data.items():
+            _input["data"][key]=json.dumps(value)
+
         if not isinstance(_input["data"], dict):
             msg.error("files_data must be of type {}".format(dict), exit=1)
 
