@@ -15,6 +15,16 @@ if __name__ == "__main__":
         metadata=dict(executable="requests_cmd"),
     ).get_args()
 
+    input_files=[]
+    for farg in args.input.file._branches:
+        if farg._here:
+            input_files.append(dict(
+                content_type=farg.content_type._value,
+                headers=farg.headers._value,
+                name=farg.name._value,
+                path=farg._value,
+            ))
+
     pkg.requests_cmd(
         auth_pull=args.auth.pull._here,
         auth_push=args.auth.push._here,
@@ -27,8 +37,8 @@ if __name__ == "__main__":
         hostname_path=args.hostname._value,
         input_data=args.input.data._value,
         input_data_not_json=args.input.data.not_json._here,
-        input_files=args.input.files._values,
-        input_files_data=args.input.files.data._value,
+        input_files=input_files,
+        input_form_data=args.input.form_data._value,
         input_json=args.input.json._value,
         input_params=args.input.params._value,
         method=args.method._value,

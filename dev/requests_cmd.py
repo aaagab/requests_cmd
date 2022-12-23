@@ -52,7 +52,7 @@ def requests_cmd(
     input_data=None,
     input_data_not_json=False,
     input_files=None,
-    input_files_data=None,
+    input_form_data=None,
     input_json=None,
     input_params=None,
     method=None,
@@ -74,31 +74,34 @@ def requests_cmd(
     if url_alias is None:
         url_alias="hostname_url"
 
+    dy_mimetypes=dict()
     if input_files is not None:
         if not isinstance(input_files, list):
             msg.error("files must be of type {}".format(list), exit=1)
+        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "mimetypes.json"), "r")as f:
+            dy_mimetypes=json.load(f)
 
     _input=dict()
     has_data=input_data is not None
     has_json=input_json is not None
-    has_files=None
+    has_form_data=None
     if input_files is None or len(input_files) == 0:
-        has_files=input_files_data is not None
+        has_form_data=input_form_data is not None
     else:
-        has_files=input_files_data is not None
+        has_form_data=input_form_data is not None
 
     if has_data:
         if has_json:
             msg.error("input_data can't be set when input_json is set.", exit=1)
-        if has_files:
-            msg.error("input_data can't be set when input_files is set or input_files_data is set.", exit=1)
+        if has_form_data:
+            msg.error("input_data can't be set when input_files is set or input_form_data is set.", exit=1)
         if input_data_not_json is True:
             _input["data"]=input_data
         else:
             _input["data"]=get_data_value(input_data)
     elif has_json:
-        if has_files:
-            msg.error("input_json can't be set when input_files is set or input_files_data is set.", exit=1)
+        if has_form_data:
+            msg.error("input_json can't be set when input_files is set or input_form_data is set.", exit=1)
 
         _input["json"]=get_data_value(input_json)
 
@@ -139,26 +142,26 @@ def requests_cmd(
             cookie=f.read()
 
 
-    if input_files_data is None:
+    if input_form_data is None:
         if input_files is None or len(input_files) == 0:
             pass
         else:
             if len(input_files) > 0:
-                _input["files"]=get_files(input_files)
+                _input["files"]=get_files(input_files, dy_mimetypes)
     else:
-        tmp_data=get_data_value(input_files_data)
+        tmp_data=get_data_value(input_form_data)
         _input["data"]=dict()
         for key, value in tmp_data.items():
             _input["data"][key]=json.dumps(value)
 
         if not isinstance(_input["data"], dict):
-            msg.error("input_files_data must be of type {}".format(dict), exit=1)
+            msg.error("input_form_data must be of type {}".format(dict), exit=1)
 
         if input_files is None or len(input_files)  == 0:
             # send an empty file to be able to send data with content-type application/x-www-form-urlencoded
             _input["files"]=[("", None)]
         else:                
-            _input["files"]=get_files(input_files)
+            _input["files"]=get_files(input_files, dy_mimetypes)
 
     request_options = dict(
         headers=get_headers(cookie=cookie),
@@ -247,15 +250,67 @@ def requests_cmd(
 
     return response
 
-def get_files(files):
+def get_files(files, dy_mimetypes):
     tmp_files=[]
-    for elem in files:
-        tmp_file=get_path(elem)
-        if not os.path.exists(tmp_file):
-            msg.error("File not found '{}'.".format(tmp_file), exit=1)
-        tmp_files.append(
-            (os.path.basename(tmp_file), open(tmp_file, "rb")),
-        )
+    authorized_keys=[
+        "content_type",
+        "headers",
+        "name",
+        "path",
+    ]
+
+    for dy in files:
+        tmp_list=[]
+        if not isinstance(dy, dict):
+            msg.error("File value '{}' must be of type {}.".format(dy, dict), exit=1)
+
+        for key in sorted(dy):
+            if key not in authorized_keys:
+                msg.error("For file dictionary key '{}' not found in {}.".format(key, authorized_keys), exit=1)
+
+        # The tuples may be 
+        #     2-tuples (filename, fileobj), 
+        #     3-tuples (filename, fileobj, contentype)
+        #     4-tuples (filename, fileobj, contentype, custom_headers).
+        
+        if "path" in dy and dy["path"] is not None:
+            tmp_file=get_path(dy["path"])
+            if not os.path.exists(tmp_file):
+                msg.error("File not found '{}'.".format(tmp_file), exit=1)
+
+            if "name" in dy and dy["name"] is not None:
+                tmp_list.append(dy["name"])
+            else:
+                tmp_list.append(os.path.basename(tmp_file))
+            tmp_list.append(open(tmp_file, "rb"))
+            
+            if "headers" in dy and dy["headers"] is not None:
+                dy["headers"]=getjson(dy["headers"])
+                if "content_type" in dy and dy["content_type"] is not None:
+                    tmp_list.append(dy["content_type"])
+                else:
+                    filer, ext=os.path.splitext(dy["path"])
+                    if ext in dy_mimetypes:
+                        tmp_list.append(dy_mimetypes[ext])
+                    else:
+                        msg.error("Unknown mimetypes for file '{}'. Please provide mimetype with key 'content_type'.".format(dy["path"]), exit=1)
+
+                tmp_list.append(dy["headers"])
+            else:
+                if "content_type" in dy and dy["content_type"] is not None:
+                    tmp_list.append(dy["content_type"])
+                else:
+                    filer, ext=os.path.splitext(dy["path"])
+                    if ext in dy_mimetypes:
+                        tmp_list.append(dy_mimetypes[ext])
+
+            tmp_files.append((
+                tmp_list[0],
+                tuple(tmp_list),
+            ))
+        else:
+            msg.error("In File dictionary '{}' key not found 'path'.".format(dy), exit=1)
+
     return tmp_files
 
 def print_status_code(code, dy_code):
