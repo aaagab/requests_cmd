@@ -42,18 +42,30 @@ args:
 
   input:
     _aliases: --input,-i
-    _xor: data,json,files
+    _xor: 
+      - data,json,file
+      - data,json,form_data
     data:
       _type: "str"
       not_json:
         _info: if set then data value will not be converted to json.
-    files:
+    file:
+      _aliases: --file,-f
       _info: "Give file path (relative or absolute) to send with a POST or PUT method, apparently any other data should be sent with --data (to confirm)"
-      _label: "FILE_PATH"
-      _values: "*"
-      data:
-        _info: "multipart/form-data"
-        _type: "str"
+      _type: file
+      _repeat: fork
+      content_type:
+        _aliases: --content-type,-c
+        _type: str
+      headers:
+        _aliases: --header,-h
+        _type: str
+      name:
+        _aliases: --name,-n
+        _type: str
+    form_data:
+      _info: "multipart/form-data"
+      _type: "str"
     json:
       _type: "str"
     params:
