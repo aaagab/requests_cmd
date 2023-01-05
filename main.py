@@ -13,6 +13,7 @@ if __name__ == "__main__":
     args=pkg.Nargs(
         options_file="config/options.yaml",
         metadata=dict(executable="requests_cmd"),
+        substitute=True,
     ).get_args()
 
     input_files=[]
