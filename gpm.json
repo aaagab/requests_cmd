@@ -6,7 +6,7 @@
         "1bb39b89-1125-448c-80c5-cdd0797fc0ef|getjson|1.0.0|gpm",
         "f093c509-18ac-4feb-8412-f556ec2e838d|geturl|0.1.2|gpm",
         "cf09346e-b436-4259-b6dd-e56516b508a5|message|7.1.0|gpm",
-        "89d8676a-6b02-43fa-8694-e97de5680cd0|nargs|5.0.0|gpm"
+        "89d8676a-6b02-43fa-8694-e97de5680cd0|nargs|5.0.1|gpm"
     ],
     "description": "Command line tool to send http requests",
     "filen_main": "main.py",
@@ -15,7 +15,7 @@
         "MIT"
     ],
     "name": "requests_cmd",
-    "timestamp": 1672934885.8887131,
+    "timestamp": 1673537555.3910706,
     "uuid4": "10e47dc7-10eb-4fa7-97d8-81b4405ade06",
-    "version": "4.1.0"
+    "version": "4.1.1"
 }
