@@ -66,7 +66,6 @@ def requests_cmd(
     url=None,
     url_alias=None,
 ):
-
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     requests.packages.urllib3.disable_warnings()
@@ -158,6 +157,9 @@ def requests_cmd(
             msg.error("input_form_data must be of type {}".format(dict), exit=1)
 
         if input_files is None or len(input_files)  == 0:
+            if len(_input["data"]) == 0:
+                msg.error("For form-data either input_form_data must be set or input_files.", exit=1)
+
             # send an empty file to be able to send data with content-type application/x-www-form-urlencoded
             _input["files"]=[("", None)]
         else:                
