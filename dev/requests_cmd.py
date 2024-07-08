@@ -295,7 +295,7 @@ def get_files(files, dy_mimetypes):
                     if ext in dy_mimetypes:
                         tmp_list.append(dy_mimetypes[ext])
                     else:
-                        msg.error("Unknown mimetypes for file '{}'. Please provide mimetype with key 'content_type'.".format(dy["path"]), exit=1)
+                        tmp_list.append("application/octet-stream")
 
                 tmp_list.append(dy["headers"])
             else:
