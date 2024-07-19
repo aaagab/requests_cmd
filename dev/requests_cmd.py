@@ -195,6 +195,7 @@ def requests_cmd(
         if download is True:
             if response.status_code == 200:
                 value=response.headers.get("Content-Disposition")
+                pprint(response.headers)
                 if value is None:
                     msg.error("Filename can't be found for download")
                     sys.exit(1)
@@ -208,7 +209,7 @@ def requests_cmd(
                     reg_str=r"^.*filename=(?:\"?|\')(.+?)(?:\"|\')?$"
                     reg=re.match(reg_str, value)
                     if reg:
-                        filen_download=reg.group(1)
+                        filen_download=reg.group(1).split(";")[0]
                     else:
                         msg.error("value '{}' does not match regex '{}'".format(value, reg_str), exit=1)
 
