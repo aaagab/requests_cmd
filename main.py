@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-
 if __name__ == "__main__":
+    import typing
     import sys, os
     import importlib
     direpa_script=os.path.dirname(os.path.realpath(__file__))
     direpa_script_parent=os.path.dirname(direpa_script)
     module_name=os.path.basename(os.path.dirname(os.path.realpath(__file__)))
     sys.path.insert(0, direpa_script_parent)
-    pkg=importlib.import_module(module_name)
+    if typing.TYPE_CHECKING:
+        import __init__ as package #type:ignore
+        from __init__ import InputFile
+    pkg:"package" = importlib.import_module(module_name) #type:ignore
     del sys.path[0]
 
     args=pkg.Nargs(
@@ -16,10 +19,10 @@ if __name__ == "__main__":
         substitute=True,
     ).get_args()
 
-    input_files=[]
+    input_files:list["InputFile"]=[]
     for farg in args.input.file._branches:
         if farg._here:
-            input_files.append(dict(
+            input_files.append(pkg.InputFile(
                 content_type=farg.content_type._value,
                 headers=farg.headers._value,
                 name=farg.name._value,
@@ -27,6 +30,7 @@ if __name__ == "__main__":
             ))
 
     pkg.requests_cmd(
+        url=args.url._value,
         auth_pull=args.auth.pull._here,
         auth_push=args.auth.push._here,
         download=args.download._here,
@@ -50,6 +54,5 @@ if __name__ == "__main__":
         show_raw=args.raw._here,
         show_raw_before=args.raw.before._here,
         show_raw_before_exit=args.raw.before.exit._here,
-        url=args.url._value,
         url_alias=args.url.alias._value,
     )
