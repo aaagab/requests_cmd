@@ -2,9 +2,9 @@
 # author: Gabriel Auger
 # license: MIT
 
-__version__= "4.1.4"
+__version__= "5.0.0"
 
-from .dev.requests_cmd import requests_cmd
+from .dev.requests_cmd import requests_cmd, HttpMethod, InputFile
 from .gpkgs.nargs import Nargs
 
 
