@@ -9,7 +9,7 @@ if __name__ == "__main__":
     sys.path.insert(0, direpa_script_parent)
     if typing.TYPE_CHECKING:
         import __init__ as package #type:ignore
-        from __init__ import InputFile
+        from __init__ import InputFile, HttpMethod
     pkg:"package" = importlib.import_module(module_name) #type:ignore
     del sys.path[0]
 
@@ -29,6 +29,11 @@ if __name__ == "__main__":
                 path=farg._value,
             ))
 
+    method_str:str|None=args.method._value
+    method:"HttpMethod"=pkg.HttpMethod.GET
+    if method_str is not None:
+        method=pkg.HttpMethod(method_str)
+        
     pkg.requests_cmd(
         url=args.url._value,
         auth_pull=args.auth.pull._here,
@@ -46,7 +51,7 @@ if __name__ == "__main__":
         input_form_data=args.input.form_data._value,
         input_json=args.input.json._value,
         input_params=args.input.params._value,
-        method=args.method._value,
+        method=method,
         show_http_code=args.http_code._here,
         show_http_code_info=args.http_code.info._here,
         show_http_code_pretty=args.http_code.pretty._here,
