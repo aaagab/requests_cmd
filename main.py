@@ -33,7 +33,7 @@ if __name__ == "__main__":
     method:"HttpMethod"=pkg.HttpMethod.GET
     if method_str is not None:
         method=pkg.HttpMethod(method_str)
-        
+
     pkg.requests_cmd(
         url=args.url._value,
         auth_pull=args.auth.pull._here,
