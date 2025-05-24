@@ -1,4 +1,8 @@
-## INPUT TYPES in REQUESTS LIBRARY
+# REQUESTS_CMD
+
+Command-line tool for HTTP requests.  
+
+## INPUT TYPES in REQUESTS LIBRARY (NOTES)
 - json: set headers to application/json
 - data: headers must be set manually
 
