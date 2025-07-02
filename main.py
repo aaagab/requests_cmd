@@ -52,6 +52,7 @@ if __name__ == "__main__":
         input_json=args.input.json._value,
         input_params=args.input.params._value,
         method=method,
+        retries=args.retries._value,
         show_http_code=args.http_code._here,
         show_http_code_info=args.http_code.info._here,
         show_http_code_pretty=args.http_code.pretty._here,

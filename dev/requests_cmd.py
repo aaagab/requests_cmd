@@ -9,11 +9,13 @@ import os
 import re
 import requests
 from requests import Response, PreparedRequest
+from requests.adapters import HTTPAdapter, Retry
 import urllib3
 import shutil
 import sys
 import tempfile
 import textwrap
+from urllib.parse import urlparse
 
 yaml_enabled=True
 try:
@@ -89,6 +91,7 @@ def requests_cmd(
     input_json:str|dict|list|None=None,
     input_params:str|dict|list|None=None,
     method:HttpMethod|None=HttpMethod.GET,
+    retries:int=0,
     show_http_code:bool=False,
     show_http_code_info:bool=False,
     show_http_code_pretty:bool=False,
@@ -116,6 +119,7 @@ def requests_cmd(
     :param str|dict|list|None=None    input_json: send JSON inside a request
     :param str|dict|list|None=None    input_params: allow to provide query parameters as a dict
     :param HttpMethod|None=HttpMethod.GET    method: HTTP methods supported by requests_cmd see object HttpMethod
+    :param int=0         retries: allows to increase value for error Max retries exceeded with url 
     :param bool=False    show_http_code: print the response http status code
     :param bool=False    show_http_code_info: print the response http status code description
     :param bool=False    show_http_code_pretty: print the response http status code in a "pretty" way
@@ -240,7 +244,6 @@ def requests_cmd(
 
     if show_raw_before is True:
         del request_options["verify"]
-        requests.Request
         before_request=requests.Request(method.value, url,**request_options).prepare()
         pretty_print_request(before_request)
         if show_raw_before_exit is True:
@@ -248,7 +251,12 @@ def requests_cmd(
         else:
             request_options["verify"]=False
 
-    response:Response=getattr( requests, method.value.lower())(url, **request_options)
+    session=requests.Session()
+    retries = Retry(total=retries,
+                backoff_factor=0.1,
+            )
+    session.mount(f"{urlparse(url).scheme}://", HTTPAdapter(max_retries=retries))
+    response:Response=getattr( session, method.value.lower())(url, **request_options)
 
     if show_raw is True:
         pretty_print_request(response.request)   
