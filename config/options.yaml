@@ -99,6 +99,12 @@ args:
       exit:
         _info: "Exit after command"
 
+  retries:
+    _info: allows to increase value for error Max retries exceeded with url.
+    _type: int
+    _default: 0
+    _required: true
+
   url:
     _label: "URL"
     alias:
