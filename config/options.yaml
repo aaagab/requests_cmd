@@ -63,9 +63,13 @@ args:
       name:
         _aliases: --name,-n
         _type: str
+      field:
+        _aliases: --field,-f
+        _type: str
     form_data:
       _info: "multipart/form-data"
       _type: "str"
+      _repeat: fork
     json:
       _type: "str"
     params:

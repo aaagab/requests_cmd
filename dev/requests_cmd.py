@@ -40,17 +40,20 @@ class InputFile():
         content_type: str|None=None,
         headers:dict[str, Any]|str|None=None,
         name: str|None=None,
+        field: str|None=None,
     ):
         """
             :param str path: required filepath absolute or relative
             :param str|None content_type: provides file mimetype
             :param dict[str, Any]|str|None headers: provides headers for file upload request
             :param str|None name: provides alternative file name
+            :param str|None field: provides a field name for FormData default is files
         """
         self.path=path
         self.content_type=content_type
         self.headers=headers
         self.name=name
+        self.field=field
     
 def get_path(file_path:str):
     if not os.path.isabs(file_path):
@@ -87,7 +90,7 @@ def requests_cmd(
     input_data:str|dict|None=None,
     input_data_not_json:bool=False,
     input_files:list[InputFile]|None=None,
-    input_form_data:str|dict|None=None,
+    input_form_data:list[str|dict]|None=None,
     input_json:str|dict|list|None=None,
     input_params:str|dict|list|None=None,
     method:HttpMethod|None=HttpMethod.GET,
@@ -204,21 +207,22 @@ def requests_cmd(
             cookie=f.read()
 
 
-    if input_form_data is None:
+    if input_form_data is None or (isinstance(input_form_data, list) and len(input_form_data) == 0):
         if input_files is None or len(input_files) == 0:
             pass
         else:
             if len(input_files) > 0:
                 _input["files"]=get_files(input_files, dy_mimetypes)
     else:
-        tmp_data=get_data_value(input_form_data)
-        if isinstance(tmp_data, dict):
-            _input["data"]=dict()
-            for key, value in tmp_data.items():
-                _input["data"][key]=json.dumps(value)
-        else:
-            msg.error(f"input_form_data must be of type {dict}")
-            sys.exit(1)
+        _input["data"]=dict()
+        for fdata in input_form_data:
+            tmp_data=get_data_value(fdata)
+            if isinstance(tmp_data, dict):
+                for key, value in tmp_data.items():
+                    _input["data"][key]=json.dumps(value)
+            else:
+                msg.error(f"input_form_data must be of type {dict}")
+                sys.exit(1)
 
         if input_files is None or len(input_files)  == 0:
             if len(_input["data"]) == 0:
@@ -252,10 +256,10 @@ def requests_cmd(
             request_options["verify"]=False
 
     session=requests.Session()
-    retries = Retry(total=retries,
+    param_retries = Retry(total=retries,
                 backoff_factor=0.1,
             )
-    session.mount(f"{urlparse(url).scheme}://", HTTPAdapter(max_retries=retries))
+    session.mount(f"{urlparse(url).scheme}://", HTTPAdapter(max_retries=param_retries))
     response:Response=getattr( session, method.value.lower())(url, **request_options)
 
     if show_raw is True:
@@ -289,7 +293,7 @@ def requests_cmd(
 
                     with open(filenpa_download, 'wb') as f:
                         shutil.copyfileobj(response.raw, f)
-                        msg.success("Saved '<cyan>{}</cyan>'".format(filenpa_download))
+                        msg.success("Saved '{}'".format(filenpa_download))
                 else:
                     raise NotImplementedError("At this point filen_download shouldn't be None")
 
@@ -346,6 +350,9 @@ def get_files(files:list[InputFile], dy_mimetypes:dict[str,str]):
             msg.error("File not found '{}'.".format(tmp_file))
             sys.exit(1)
 
+        if input_file.field is None:
+            input_file.field="files"
+
         if input_file.name is None:
             tmp_list.append(os.path.basename(tmp_file))
         else:
@@ -382,17 +389,17 @@ def get_files(files:list[InputFile], dy_mimetypes:dict[str,str]):
         if len(tmp_list) == 2:
             if isinstance(tmp_list[0], str) and isinstance(tmp_list[1], BufferedReader):
                 tmp_files.append(
-                    (tmp_list[0], (tmp_list[0], tmp_list[1]))
+                    (input_file.field, (tmp_list[0], tmp_list[1]))
                 )
         elif len(tmp_list) == 3:
             if isinstance(tmp_list[0], str) and isinstance(tmp_list[1], BufferedReader) and isinstance(tmp_list[2], str):
                 tmp_files.append(
-                    (tmp_list[0], (tmp_list[0], tmp_list[1], tmp_list[2]))
+                    (input_file.field, (tmp_list[0], tmp_list[1], tmp_list[2]))
                 )
         elif len(tmp_list) == 4:
             if isinstance(tmp_list[0], str) and isinstance(tmp_list[1], BufferedReader) and isinstance(tmp_list[2], str) and isinstance(tmp_list[3], dict):
                 tmp_files.append(
-                    (tmp_list[0], (tmp_list[0], tmp_list[1], tmp_list[2], tmp_list[3]))
+                    (input_file.field, (tmp_list[0], tmp_list[1], tmp_list[2], tmp_list[3]))
                 )
         else:
             raise TypeError()
