@@ -29,6 +29,11 @@ if __name__ == "__main__":
                 path=farg._value,
             ))
 
+    input_form_data:list[str|dict]=[]
+    for farg in args.input.form_data._branches:
+        if farg._here:
+            input_form_data.append(farg._value)
+
     method_str:str|None=args.method._value
     method:"HttpMethod"=pkg.HttpMethod.GET
     if method_str is not None:
@@ -48,7 +53,7 @@ if __name__ == "__main__":
         input_data=args.input.data._value,
         input_data_not_json=args.input.data.not_json._here,
         input_files=input_files,
-        input_form_data=args.input.form_data._value,
+        input_form_data=input_form_data,
         input_json=args.input.json._value,
         input_params=args.input.params._value,
         method=method,
